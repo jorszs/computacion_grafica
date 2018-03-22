@@ -6,7 +6,7 @@ import math
     1.dibujar un cuadrilatero, siendo cada vertice(punto) la captura
     de la posicion del mouse al hacer click
     2.escalar el triangulo en 0.4, tomando punto fijo la
-    primer posicion de clcik capturada
+    primer posicion de click capturada
 
 
 """
