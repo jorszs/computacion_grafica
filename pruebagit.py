@@ -23,3 +23,5 @@ if __name__ == '__main__':
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 fin =True
+            if event.type == pygame.K_UP:
+                pass    
