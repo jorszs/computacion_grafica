@@ -1,0 +1,18 @@
+1) pantalla de 700x500, fondo de min 1200px ancho y 1000px alto 15%
+   cooperativo o competitivo
+
+2) juego para 2 jugadores 10%
+ 
+3) 2 tipos de enemigo, deben aparecer continuamente comportamiento != de movimiento
+   apariencia claramente deferenciado (40%)
+
+4) la salud de ambos jugadores debe ser visible siempre y debe actualizarse con las
+   circunstancias. debe ser diferenciable.
+
+5) 4 modificadores del juego 10%
+   lo que toca y que le de vida -bomba, superbomba , congelar al enemigo, inmortalidad 
+	
+6) jugabilidad 15%  buen movimiento
+1 nivel
+
+inkscape -lightroom

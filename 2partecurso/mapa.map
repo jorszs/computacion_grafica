@@ -1,0 +1,27 @@
+[nivel]
+origen = sprite/terrenogen.png
+al=12
+an=32
+mapa=..............
+     ......######..
+     .......#....%%
+     .......#....%.
+
+
+[.]
+nom=pasto
+x=16
+y=()
+muro=0
+
+[#]
+nom=bloque
+x=22
+y=3
+muro=1
+
+[%]
+nom=agua
+x=13
+y=3
+muro=0
