@@ -65,6 +65,7 @@ class Jugador(pygame.sprite.Sprite):
         self.vel_x = 0
         self.vel_y = 0
         self.salud = 5
+        self.tipo_bala = 0
     def set_accion(self,accion):
         self.accion = accion
     def update(self):
@@ -179,7 +180,7 @@ class Bala (pygame.sprite.Sprite):
         self.image = pygame.Surface([10,30])#pygame.image.load('sprites/bala.png')#pygame.Surface([10,30])
         self.image.fill([0,255,0])
         self.rect = self.image.get_rect()
-        self.tipo = 1
+        self.tipo = 0
         self.vel_x = 0
         self.vel_y = 10
 
@@ -212,6 +213,7 @@ if __name__ == '__main__':
     an_fondo = info[2]
     al_fondo = info[3]
     eliminados = 0
+    tipo_bala = 0
     posy =  ALTO-al_fondo #variable para controlar el dibujo del fondo
 # grupos
     todos = pygame.sprite.Group()
@@ -288,6 +290,7 @@ if __name__ == '__main__':
                     b = Bala()
                     b.rect.x = jugador.rect.x+70
                     b.rect.y = jugador.rect.y
+                    b.tipo = jugador.tipo_bala
                     todos.add(b)
                     balas.add(b)
                     balas_j1.add(b)
@@ -423,18 +426,20 @@ if __name__ == '__main__':
 
         for j in jugadores:
             ls_coljs = pygame.sprite.spritecollide(j,naves_madre,True)
+            ls_colmo = pygame.sprite.spritecollide(j,modificadores,True)
+
             for e in ls_coljs:
                 eliminados += 1
                 j.salud -= 1
                 e.remove()
                 naves_madre.remove(e)
                 todos.remove(e)
-        for e in jugadores:
-            ls_colmo = pygame.sprite.spritecollide(e,modificadores,True)
+
             for v in ls_colmo:
                 if v.tipo == 0:
-                    e.salud += 2
-                if v.tipo == 1:pass
+                    j.salud += 2
+                if v.tipo == 1:
+                    j.tipo_bala = 1
                 if v.tipo == 2:pass
                 if v.tipo == 3:pass
         #control de objetos
