@@ -1,3 +1,7 @@
+#
+#modificadores : cuando los jugadores elimines a las 3 primeras naves Nave_madre
+#                cada que los jugadores eliminen a una nave madre
+#
 import pygame
 import time
 import random
@@ -158,11 +162,9 @@ class Nave_madre(pygame.sprite.Sprite):
             else:
                 self.rect.y += self.vel_y
         if self.tipo == 1:
-
             self.rect.x += (self.jugador1.rect.x+ self.jugador1.rect[2]/3 + 7 - self.rect.x)/50
             self.rect.y += (self.jugador1.rect.y+ self.jugador1.rect[3]  - self.rect.y)/50
         if self.tipo == 2:
-            #self.salud = 4
             self.rect.x += (self.jugador2.rect.x+ self.jugador2.rect[2]/3  - self.rect.x)/50
             self.rect.y += (self.jugador2.rect.y+ self.jugador2.rect[3]  - self.rect.y)/50
 
@@ -177,6 +179,7 @@ class Bala (pygame.sprite.Sprite):
         self.image = pygame.Surface([10,30])#pygame.image.load('sprites/bala.png')#pygame.Surface([10,30])
         self.image.fill([0,255,0])
         self.rect = self.image.get_rect()
+        self.tipo = 1
         self.vel_x = 0
         self.vel_y = 10
 
@@ -191,7 +194,7 @@ class Modificador (pygame.sprite.Sprite):
         self.image.fill([0,255,0])
         self.rect = self.image.get_rect()
         self.rect.x = random.randrange(20,ANCHO-20)
-
+        self.tipo = random.randrange(4)
         self.vel_x = 0
         self.vel_y = 4
 
@@ -292,17 +295,17 @@ if __name__ == '__main__':
                     jugador.set_accion(0)
         #acciones jugador2
                 if event.key == pygame.K_w:
-                    jugador2.vel_y += -5
+                    jugador2.vel_y += -8
                     jugador2.vel_x = 0
                 if event.key == pygame.K_s:
-                    jugador2.vel_y += 5
+                    jugador2.vel_y += 8
                     jugador2.vel_x = 0
                 if event.key == pygame.K_a:
                     jugador2.vel_y = 0
-                    jugador2.vel_x = -5
+                    jugador2.vel_x = -8
                 if event.key == pygame.K_d:
                     jugador2.vel_y = 0
-                    jugador2.vel_x = 5
+                    jugador2.vel_x = 8
             #condicion de disparo jugador2
                 if event.key == pygame.K_g:
                     b = Bala()
@@ -356,9 +359,9 @@ if __name__ == '__main__':
             else:posy = ALTO-al_fondo
         else: pass
             #posy = ALTO-al_fondo
+
+
         #analizar coliciones
-
-
         for b in balas_e:
 
             ls_colj = pygame.sprite.spritecollide(b, jugadores, False)
@@ -373,26 +376,67 @@ if __name__ == '__main__':
                 jugador2.salud -= 1
 
         for b in balas:
-            ls_colb = pygame.sprite.spritecollide(b,enemigos,True)
-            ls_coln = pygame.sprite.spritecollide(b,naves_madre,False)
-            ls_col_be = pygame.sprite.spritecollide(b,balas_e,True)
-            for e in ls_colb:
-                enemigos.remove(e)
-                todos.remove(e)
-                balas.remove(e)
-                #eliminados +=1
-            for e in ls_coln:
-                if e.salud == 0:
-                    naves_madre.remove(e)
+
+            if b.tipo == 0:
+                ls_colb = pygame.sprite.spritecollide(b,enemigos,True)
+                ls_coln = pygame.sprite.spritecollide(b,naves_madre,False)
+                ls_col_be = pygame.sprite.spritecollide(b,balas_e,True)
+                for e in ls_colb:
+                    e.remove()
+                    enemigos.remove(e)
                     todos.remove(e)
-                    eliminados += 1
-                    print eliminados
-                balas.remove(b)
-                todos.remove(b)
+                    balas.remove(e)
+                    #eliminados +=1
+                for e in ls_coln:
+                    if e.salud == 0:
+                        e.remove()
+                        naves_madre.remove(e)
+                        todos.remove(e)
+                        eliminados += 1
+                        #print eliminados
+                    balas.remove(b)
+                    todos.remove(b)
 
-                e.salud -= 1
-                print 'salud nave madre mermando'
+                    e.salud -= 1
+                    print 'salud nave madre mermando'
+            if b.tipo == 1:
+                ls_colb = pygame.sprite.spritecollide(b,enemigos,True)
+                ls_coln = pygame.sprite.spritecollide(b,naves_madre,False)
+                ls_col_be = pygame.sprite.spritecollide(b,balas_e,True)
+                #eliminados += 1
+                for e in ls_colb:
+                    e.remove()
+                    enemigos.remove(e)
+                    todos.remove(e)
+                    balas.remove(e)
+                    #eliminados +=1
+                for e in ls_coln:
+                    if e.salud == 0:
+                        e.remove()
+                        naves_madre.remove(e)
+                        todos.remove(e)
+                        eliminados += 1
+                        print eliminados
+                    balas.remove(b)
+                    todos.remove(b)
+                    e.salud -= 1
 
+        for j in jugadores:
+            ls_coljs = pygame.sprite.spritecollide(j,naves_madre,True)
+            for e in ls_coljs:
+                eliminados += 1
+                j.salud -= 1
+                e.remove()
+                naves_madre.remove(e)
+                todos.remove(e)
+        for e in jugadores:
+            ls_colmo = pygame.sprite.spritecollide(e,modificadores,True)
+            for v in ls_colmo:
+                if v.tipo == 0:
+                    e.salud += 2
+                if v.tipo == 1:pass
+                if v.tipo == 2:pass
+                if v.tipo == 3:pass
         #control de objetos
 
         #renovacion de enemivos
@@ -401,12 +445,15 @@ if __name__ == '__main__':
             for e in range(3):
                 n = Nave_madre(jugador,jugador2)
                 if n.tipo == 1 or n.tipo == 2:
+                    n.espera = random.randrange(60)
+                    n.temp = random.randrange(60)
                     n.salud = 4
                 naves_madre.add(n)
                 todos.add(n)
-            mo = Modificador()
-            modificadores.add(mo)
-            todos.add(mo)
+            for n in range(2):
+                n = Modificador()
+                modificadores.add(n)
+                todos.add(n)
         for e in enemigos:
             if e.disparar:
                 e.temp = random.randrange(60)
