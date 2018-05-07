@@ -122,19 +122,22 @@ class Enemigo (pygame.sprite.Sprite):
 
 #clase nave_madre
 class Nave_madre(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self,jugador1,jugador2):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.Surface([40,25])
         self.image.fill([55,20,200])
         self.rect = self.image.get_rect()
+        self.jugador1 = jugador1
+        self.jugador2 = jugador2
         self.vel_x = 2
         self.vel_y = 3
+        self.salud = 10
         self.rect.x = random.randrange(ANCHO)
         self.rect.y = -100
-        self.espera = random.randrange(100,2000)
+        self.espera = random.randrange(60)
         self.generar = False
-        self.temp = random.randrange(100,2000)
-        self.tipo = 0#random.randrange(4)
+        self.temp = random.randrange(60)
+        self.tipo = random.randrange(3)
         self.tope = 0
     def update(self):
         if self.temp >0:
@@ -143,8 +146,7 @@ class Nave_madre(pygame.sprite.Sprite):
             self.generar = True
         if self.espera > 0:
             self.espera -=1
-        else:
-            self.rect.y += self.vel_y
+
         if self.tipo == 0:
             if self.rect.y >= ALTO/6:
                 self.rect.y = ALTO/6
@@ -153,6 +155,18 @@ class Nave_madre(pygame.sprite.Sprite):
                 elif self.rect.left <= 0:
                     self.vel_x = 2
                 self.rect.x += self.vel_x
+            else:
+                self.rect.y += self.vel_y
+        if self.tipo == 1:
+
+            self.rect.x += (self.jugador1.rect.x+ self.jugador1.rect[2]/3 + 7 - self.rect.x)/50
+            self.rect.y += (self.jugador1.rect.y+ self.jugador1.rect[3]  - self.rect.y)/50
+        if self.tipo == 2:
+            #self.salud = 4
+            self.rect.x += (self.jugador2.rect.x+ self.jugador2.rect[2]/3  - self.rect.x)/50
+            self.rect.y += (self.jugador2.rect.y+ self.jugador2.rect[3]  - self.rect.y)/50
+
+
 
 
 
@@ -161,7 +175,7 @@ class Bala (pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.Surface([10,30])#pygame.image.load('sprites/bala.png')#pygame.Surface([10,30])
-        #self.image.fill([0,255,0])
+        self.image.fill([0,255,0])
         self.rect = self.image.get_rect()
         self.vel_x = 0
         self.vel_y = 10
@@ -170,7 +184,20 @@ class Bala (pygame.sprite.Sprite):
         self.rect.y -= self.vel_y
         #self.rect.x += self.vel_x
 
+class Modificador (pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.Surface([20,20])#pygame.image.load('sprites/bala.png')#pygame.Surface([10,30])
+        self.image.fill([0,255,0])
+        self.rect = self.image.get_rect()
+        self.rect.x = random.randrange(20,ANCHO-20)
 
+        self.vel_x = 0
+        self.vel_y = 4
+
+    def update(self):
+        self.rect.y += self.vel_y
+        #self.rect.x += self.vel_x
 if __name__ == '__main__':
     #definicion de variables
     pygame.init()
@@ -181,16 +208,18 @@ if __name__ == '__main__':
     info=fondo.get_rect()
     an_fondo = info[2]
     al_fondo = info[3]
+    eliminados = 0
     posy =  ALTO-al_fondo #variable para controlar el dibujo del fondo
 # grupos
     todos = pygame.sprite.Group()
     jugadores = pygame.sprite.Group()
     balas = pygame.sprite.Group()
     enemigos = pygame.sprite.Group()
-    naves_madres = pygame.sprite.Group()
+    naves_madre = pygame.sprite.Group()
     balas_e =pygame.sprite.Group()
     balas_j1 = pygame.sprite.Group()
     balas_j2 = pygame.sprite.Group()
+    modificadores = pygame.sprite.Group()
 #definiendo y agregando elementos a la matriz de sprites
     m = matriz ()
     m2 = matriz2()
@@ -198,9 +227,12 @@ if __name__ == '__main__':
     jugador = Jugador(m)
     jugador2 = Jugador(m2)
     jugador2.image = jugador2.m[0][0]#pygame.image.load('sprites/nave2.png')#jugador2.m[3][0]
-    n = Nave_madre()
-    naves_madres.add(n)
-    todos.add(n)
+    for e in range(3):
+        n = Nave_madre(jugador,jugador2)
+        if n.tipo == 1 or n.tipo == 2:
+            n.salud = 4
+        naves_madre.add(n)
+        todos.add(n)
     #e = Enemigo()
     #e.rect.x = random.randrange(0,ANCHO)
     #e.rect.y = random.randrange(-300,0)
@@ -231,21 +263,21 @@ if __name__ == '__main__':
                 if event.key == pygame.K_RIGHT:
                     jugador.set_accion(1)
                     jugador.vel_y = 0
-                    jugador.vel_x = 5
+                    jugador.vel_x = 8
 
                 if event.key == pygame.K_LEFT:
                     jugador.set_accion(2)
                     jugador.vel_y = 0
-                    jugador.vel_x = -5
+                    jugador.vel_x = -8
 
                 if event.key == pygame.K_DOWN:
                     jugador.set_accion(0)
-                    jugador.vel_y += 5
+                    jugador.vel_y += 8
                     jugador.vel_x =0
 
                 if event.key == pygame.K_UP:
                     jugador.set_accion(0)
-                    jugador.vel_y += -5
+                    jugador.vel_y += -8
                     jugador.vel_x = 0
 
             #condicion para que jugador1 dispare
@@ -326,7 +358,55 @@ if __name__ == '__main__':
             #posy = ALTO-al_fondo
         #analizar coliciones
 
+
+        for b in balas_e:
+
+            ls_colj = pygame.sprite.spritecollide(b, jugadores, False)
+            if jugador in ls_colj:
+                balas_e.remove(b)
+                todos.remove(b)
+                jugador.salud -= 1
+                print 'salud', jugador.salud
+            elif jugador2 in ls_colj:
+                balas_e.remove(b)
+                todos.remove(b)
+                jugador2.salud -= 1
+
+        for b in balas:
+            ls_colb = pygame.sprite.spritecollide(b,enemigos,True)
+            ls_coln = pygame.sprite.spritecollide(b,naves_madre,False)
+            ls_col_be = pygame.sprite.spritecollide(b,balas_e,True)
+            for e in ls_colb:
+                enemigos.remove(e)
+                todos.remove(e)
+                balas.remove(e)
+                #eliminados +=1
+            for e in ls_coln:
+                if e.salud == 0:
+                    naves_madre.remove(e)
+                    todos.remove(e)
+                    eliminados += 1
+                    print eliminados
+                balas.remove(b)
+                todos.remove(b)
+
+                e.salud -= 1
+                print 'salud nave madre mermando'
+
         #control de objetos
+
+        #renovacion de enemivos
+        if eliminados == 3:
+            eliminados = 0
+            for e in range(3):
+                n = Nave_madre(jugador,jugador2)
+                if n.tipo == 1 or n.tipo == 2:
+                    n.salud = 4
+                naves_madre.add(n)
+                todos.add(n)
+            mo = Modificador()
+            modificadores.add(mo)
+            todos.add(mo)
         for e in enemigos:
             if e.disparar:
                 e.temp = random.randrange(60)
@@ -339,38 +419,49 @@ if __name__ == '__main__':
                 #b.image.fill(azul)
                 balas_e.add(b)
                 todos.add(b)
-        for n in naves_madres:
-            if n.generar and n.tope < 30 and n.rect.y == ALTO/6:
-                n.tempo = random.randrange(100,2000)
-                n.generar=False
-                n.tope +=1
+
+        for n in naves_madre:
+            if n.tipo == 0:
+                if n.generar and n.tope < 30 and n.rect.y >= ALTO/6:
+                    n.temp = random.randrange(60)
+                    n.generar=False
+                    n.tope +=1
 
 
-                '''e = Enemigo()
-                e.rect.x = n.rect.x
-                e.rect.y = n.rect.y
-                e.vel_x = random.randrange(-4,4)
-                e.vel_y = 1'''
+                    e = Enemigo()
+                    e.rect.x = n.rect.x
+                    e.rect.y = n.rect.y
+                    e.vel_x = random.randrange(-4,4)
+                    e.vel_y = 1
 
-                b = Bala()
-                b.vel_y = -10
-                b.vel_x = 0
-                b.rect.x = n.rect.x
-                b.rect.y = n.rect.y
-                #b.image.fill(azul)
-                balas_e.add(b)
-                todos.add(b)
+                    b = Bala()
+                    b.vel_y = -10
+                    b.vel_x = 0
+                    b.rect.x = n.rect.x
+                    b.rect.y = n.rect.y
+                    #b.image.fill(azul)
+                    balas_e.add(b)
+                    todos.add(b)
 
-                '''enemigos.add(e)
-                todos.add(e)'''
-        for e in enemigos:
-            if e.rect.x >ALTO:
-                enemigos.remove(e)
-        for b in balas:
-            if b.rect.x > ANCHO or b.rect.y > ALTO:
-                balas.remove(b)
+                    enemigos.add(e)
+                    todos.add(e)
+        #eliminacion de objetos fuera de calcularPosPantalla
+        for b in balas_e:
+            if b.rect.y > ALTO:
+                b.remove()
+                balas_e.remove(b)
                 todos.remove(b)
 
+        for b in balas:
+            if b.rect.y < 0:
+                b.remove()
+                balas.remove(b)
+                todos.remove(b)
+        for e in enemigos:
+            if e.rect.y >ALTO:
+                e.remove()
+                enemigos.remove(e)
+                todos.remove(e)
         #refresco de pantalla
 
         todos.update()
@@ -378,7 +469,7 @@ if __name__ == '__main__':
         texto = fuente.render("salud J1", False, [255,255,255])
         salud_valor = fuente.render(str(jugador.salud),False,[255,155,155])
         texto2 = fuente2.render("salud J2", False, [255,255,255])
-        salud2_valor = fuente2.render(str(jugador.salud),False,[255,155,155])
+        salud2_valor = fuente2.render(str(jugador2.salud),False,[255,155,155])
         pantalla.blit(fondo,[0,posy])
         pantalla.blit(texto, [50,10])
         pantalla.blit(texto2, [200,10])
