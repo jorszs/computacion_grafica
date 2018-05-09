@@ -64,6 +64,7 @@ class Jugador(pygame.sprite.Sprite):
         self.rect.y = 200
         self.vel_x = 0
         self.vel_y = 0
+        self.bombas = 0
         self.salud = 5
         self.tipo_bala = 0
     def set_accion(self,accion):
@@ -188,6 +189,21 @@ class Bala (pygame.sprite.Sprite):
         self.rect.y -= self.vel_y
         #self.rect.x += self.vel_x
 
+class Bomba(pygame.sprite.Sprite):
+    def __init__(self,m):
+        pygame.sprite.Sprite.__init__(self)
+        self.m = m
+        self.image = pygame.Surface([10,30])#pygame.image.load('sprites/bala.png')#pygame.Surface([10,30])
+        self.image.fill([0,255,0])
+        self.rect = self.image.get_rect()
+
+        self.tipo = 0
+        self.vel_x = 0
+        self.vel_y = 10
+
+    def update(self):
+        self.rect.y -= self.vel_y
+
 class Modificador (pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -195,7 +211,7 @@ class Modificador (pygame.sprite.Sprite):
         self.image.fill([0,255,0])
         self.rect = self.image.get_rect()
         self.rect.x = random.randrange(20,ANCHO-20)
-        self.tipo = random.randrange(4)
+        self.tipo = 2#random.randrange(4)
         self.vel_x = 0
         self.vel_y = 4
 
@@ -225,6 +241,7 @@ if __name__ == '__main__':
     balas_j1 = pygame.sprite.Group()
     balas_j2 = pygame.sprite.Group()
     modificadores = pygame.sprite.Group()
+    bombas = pygame.sprite.Group()
 #definiendo y agregando elementos a la matriz de sprites
     m = matriz ()
     m2 = matriz2()
@@ -296,6 +313,14 @@ if __name__ == '__main__':
                     balas_j1.add(b)
                     #print 'petrosky'
                     jugador.set_accion(0)
+                if event.key == pygame.K_KP0 and jugador.bombas >0:
+                    jugador.bombas -= 1
+                    bom = Bomba(3)
+                    bom.rect.x = jugador.rect.x+70
+                    bom.rect.y = jugador.rect.y
+                    bombas.add(bom)
+                    todos.add(bom)
+
         #acciones jugador2
                 if event.key == pygame.K_w:
                     jugador2.vel_y += -8
@@ -358,9 +383,11 @@ if __name__ == '__main__':
         #if posy < 0:
         if jugador.rect.y <= ALTO/2 and jugador2.rect.y <= ALTO/2:
             if posy<0:
-                posy += 2
+                posy += 4
             else:posy = ALTO-al_fondo
-        else: pass
+        elif posy<0:
+            posy +=2
+        else:posy = ALTO-al_fondo
             #posy = ALTO-al_fondo
 
 
@@ -436,12 +463,15 @@ if __name__ == '__main__':
                 todos.remove(e)
 
             for v in ls_colmo:
-                if v.tipo == 0:
+                if v.tipo == 0:#modificador para aumentar salud
                     j.salud += 2
                 if v.tipo == 1:
-                    j.tipo_bala = 1
-                if v.tipo == 2:pass
+                    j.tipo_bala = 1 #modificador para generar balarompemuros
+                if v.tipo == 2:
+                    j.bombas += 1
+
                 if v.tipo == 3:pass
+
         #control de objetos
 
         #renovacion de enemivos

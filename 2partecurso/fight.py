@@ -58,6 +58,7 @@ class Jugador (pygame.sprite.Sprite):
             self.i+=1
             if self.i >= len(self.m[self.accion]):
                 self.i=0
+
         self.image = self.m[self.accion][self.i]
 
 class Barril (pygame.sprite.Sprite):
