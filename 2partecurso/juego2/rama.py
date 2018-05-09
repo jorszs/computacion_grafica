@@ -2,9 +2,18 @@
 #modificadores : cuando los jugadores elimines a las 3 primeras naves Nave_madre
 #                cada que los jugadores eliminen a una nave madre
 #
+
+#por hacer
+#eliminar enemigos cuando rect.x sea <0 o > ANCHO
+#adicionarle las propiedades de modificadores al segundo jugador
+#que el jugador pueda exederse un poco a los laterales para que alcance a disparar en los bordes
+#recordar : ponerle la aleatoriedad al atributo tipo de la clase modificadores
+#ideas : ponerle mas vida a los enemigos. coliciones de enemigos y jugador
+#       adicionar naves madre a enemigos para que las balas rastreadoras tambien las identifiquen como objetivos 
 import pygame
 import time
 import random
+import math
 #definicion de variables
 
 verde=[255,0,0]
@@ -183,12 +192,44 @@ class Bala (pygame.sprite.Sprite):
         self.image = pygame.Surface([10,30])#pygame.image.load('sprites/bala.png')#pygame.Surface([10,30])
         self.image.fill([0,255,0])
         self.rect = self.image.get_rect()
+        self.enemigos = pygame.sprite.Group()
+        self.i = 0#float('inf')
+        self.k = {}
         self.tipo = 0
         self.vel_x = 0
         self.vel_y = 10
 
     def update(self):
         self.rect.y -= self.vel_y
+        if self.tipo == 2:
+
+            #for v in self.enemigos:
+            #k= {v for v in self.enemigos}
+            #print k
+            #distancia = [math.sqrt((v.rect.x - self.rect.x)**2 + (v.rect.y - self.rect.y)**2) for v in self.enemigos]
+            for v in self.enemigos:
+                #self.k[v] = int(math.sqrt((v.rect.x - self.rect.x)**2 + (v.rect.y - self.rect.y)**2))
+                self.k[int(math.sqrt((v.rect.x - self.rect.x)**2 + (v.rect.y - self.rect.y)**2))] = v
+            if self.k:
+                enem = self.k[min(self.k.keys())]
+                if enem in self.enemigos:
+                    print enem
+                    self.rect.x += (enem.rect.x+ enem.rect[2]/2 + 7 - self.rect.x)/7
+                    self.rect.y += (enem.rect.y+ enem.rect[3]/2  - self.rect.y)/50
+                else:
+                    enem = self.k[min(self.k.keys())]
+
+            else:
+                pass#self.rect.y -= self.vel_y - 5
+            #print self.k
+            #self.k[math.sqrt((v.rect.x - self.rect.x)**2 + (v.rect.y - self.rect.y)**2) for v in self.enemigos] = [v for v in self.enemigos]
+            '''for v in self.enemigos:
+                while self.i <= len(distancia):
+                    self.k[v] = distancia[self.i]
+                    self.i += 1'''
+
+                #self.k[v]=distancia[i]
+
         #self.rect.x += self.vel_x
 
 class Bomba(pygame.sprite.Sprite):
@@ -283,7 +324,7 @@ if __name__ == '__main__':
             if event.type == pygame.QUIT:
                 fin =True
             if event.type == pygame.KEYDOWN:
-                print 'keydowm'#jugador.accion = 2
+                #print 'keydowm'#jugador.accion = 2
                 if event.key == pygame.K_RIGHT:
                     jugador.set_accion(1)
                     jugador.vel_y = 0
@@ -330,15 +371,19 @@ if __name__ == '__main__':
                             b3.rect.y = jugador.rect.y + jugador.rect[2]/2 + 60
                             b4.rect.x = jugador.rect.x + jugador.rect[2]/2 + 60
                             b4.rect.y = jugador.rect.y + jugador.rect[2]/2 + 60
+
+
                             l=[[b1,b2,b3,b4]]
+
                             for v in l[0]:
                                 todos.add(v)
                                 balas.add(v)
                                 balas_j1.add(v)
+                                v.enemigos = enemigos
 
                         else:
                             jugador.retardo -= 1
-                            print jugador.retardo
+                            #print jugador.retardo
 
                     else:
                         b.tipo = jugador.tipo_bala
@@ -376,6 +421,7 @@ if __name__ == '__main__':
                     b = Bala()
                     b.rect.x = jugador2.rect.x+20
                     b.rect.y = jugador2.rect.y
+
                     todos.add(b)
                     balas.add(b)
                     balas_j2.add(b)
