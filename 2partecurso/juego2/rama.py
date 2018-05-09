@@ -67,6 +67,8 @@ class Jugador(pygame.sprite.Sprite):
         self.bombas = 0
         self.salud = 5
         self.tipo_bala = 0
+        self.retardo = 4 #retardo para la aparicion de balas perseguidoras
+
     def set_accion(self,accion):
         self.accion = accion
     def update(self):
@@ -211,7 +213,7 @@ class Modificador (pygame.sprite.Sprite):
         self.image.fill([0,255,0])
         self.rect = self.image.get_rect()
         self.rect.x = random.randrange(20,ANCHO-20)
-        self.tipo = 2#random.randrange(4)
+        self.tipo = 3#random.randrange(4)
         self.vel_x = 0
         self.vel_y = 4
 
@@ -307,12 +309,47 @@ if __name__ == '__main__':
                     b = Bala()
                     b.rect.x = jugador.rect.x+70
                     b.rect.y = jugador.rect.y
-                    b.tipo = jugador.tipo_bala
+                    if jugador.tipo_bala == 2: #tipo_bala = 2 es la bala perseguidora
+                        if jugador.retardo == 0:
+                            jugador.retardo = 10
+                            b.tipo = 0
+                            b1 = Bala()
+                            b1.tipo = jugador.tipo_bala
+                            b2 = Bala()
+                            b2.tipo = jugador.tipo_bala
+                            b3 = Bala()
+                            b3.tipo = jugador.tipo_bala
+                            b4 = Bala()
+                            b4.tipo = jugador.tipo_bala
+
+                            b1.rect.x = jugador.rect.x + jugador.rect[2]/2 - 60
+                            b1.rect.y = jugador.rect.y + jugador.rect[2]/2 - 60
+                            b2.rect.x = jugador.rect.x + jugador.rect[2]/2 + 60
+                            b2.rect.y = jugador.rect.y + jugador.rect[2]/2 - 60
+                            b3.rect.x = jugador.rect.x + jugador.rect[2]/2 - 60
+                            b3.rect.y = jugador.rect.y + jugador.rect[2]/2 + 60
+                            b4.rect.x = jugador.rect.x + jugador.rect[2]/2 + 60
+                            b4.rect.y = jugador.rect.y + jugador.rect[2]/2 + 60
+                            l=[[b1,b2,b3,b4]]
+                            for v in l[0]:
+                                todos.add(v)
+                                balas.add(v)
+                                balas_j1.add(v)
+
+                        else:
+                            jugador.retardo -= 1
+                            print jugador.retardo
+
+                    else:
+                        b.tipo = jugador.tipo_bala
+
                     todos.add(b)
                     balas.add(b)
                     balas_j1.add(b)
                     #print 'petrosky'
                     jugador.set_accion(0)
+
+
                 if event.key == pygame.K_KP0 and jugador.bombas >0:
                     jugador.bombas -= 1
                     bom = Bomba(3)
@@ -344,7 +381,7 @@ if __name__ == '__main__':
                     balas_j2.add(b)
         #condiciones de tecla levantada ambos jugadores
             if event.type == pygame.KEYUP:
-                print 'perra'
+                #print 'perra'
                 if event.key == pygame.K_RIGHT and jugador.vel_x>0: #or pygame.K_LEFT:
                     jugador.vel_x += -5
                     jugador.accion = 0
@@ -399,7 +436,7 @@ if __name__ == '__main__':
                 balas_e.remove(b)
                 todos.remove(b)
                 jugador.salud -= 1
-                print 'salud', jugador.salud
+                #print 'salud', jugador.salud
             elif jugador2 in ls_colj:
                 balas_e.remove(b)
                 todos.remove(b)
@@ -407,7 +444,7 @@ if __name__ == '__main__':
 
         for b in balas:
 
-            if b.tipo == 0:
+            if b.tipo == 0 or b.tipo == 2:
                 ls_colb = pygame.sprite.spritecollide(b,enemigos,True)
                 ls_coln = pygame.sprite.spritecollide(b,naves_madre,False)
                 ls_col_be = pygame.sprite.spritecollide(b,balas_e,True)
@@ -428,7 +465,7 @@ if __name__ == '__main__':
                     todos.remove(b)
 
                     e.salud -= 1
-                    print 'salud nave madre mermando'
+                    #print 'salud nave madre mermando'
             if b.tipo == 1:
                 ls_colb = pygame.sprite.spritecollide(b,enemigos,True)
                 ls_coln = pygame.sprite.spritecollide(b,naves_madre,False)
@@ -470,7 +507,8 @@ if __name__ == '__main__':
                 if v.tipo == 2:
                     j.bombas += 1
 
-                if v.tipo == 3:pass
+                if v.tipo == 3:
+                    j.tipo_bala = 2
 
         #control de objetos
 
