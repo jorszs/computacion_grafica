@@ -10,6 +10,8 @@
 #recordar : ponerle la aleatoriedad al atributo tipo de la clase modificadores
 #ideas : ponerle mas vida a los enemigos. coliciones de enemigos y jugador
 #       adicionar naves madre a enemigos para que las balas rastreadoras tambien las identifiquen como objetivos 
+# SPRITES  https://t-free.deviantart.com/art/CrossCode-Moth-Boss-609012494
+#https://t-free.deviantart.com/art/Explosion-010-Impact-Radial-MIX-668569283
 import pygame
 import time
 import random
@@ -115,8 +117,8 @@ class Jugador(pygame.sprite.Sprite):
 class Enemigo (pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface([30,30])
-        self.image.fill([225,0,0])
+        self.image = pygame.image.load('sprites/navesecundaria.png')# pygame.Surface([30,30])
+        #self.image.fill([225,0,0])
         self.rect = self.image.get_rect()
         self.vel_x = -5
         self.vel_y = 5
@@ -141,8 +143,8 @@ class Enemigo (pygame.sprite.Sprite):
 class Nave_madre(pygame.sprite.Sprite):
     def __init__(self,jugador1,jugador2):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface([40,25])
-        self.image.fill([55,20,200])
+        self.image = pygame.image.load('sprites/navemadre.png')#image.sprite#pygame.Surface([40,25])
+        #self.image.fill([55,20,200])
         self.rect = self.image.get_rect()
         self.jugador1 = jugador1
         self.jugador2 = jugador2
@@ -189,8 +191,8 @@ class Nave_madre(pygame.sprite.Sprite):
 class Bala (pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface([10,30])#pygame.image.load('sprites/bala.png')#pygame.Surface([10,30])
-        self.image.fill([0,255,0])
+        self.image = pygame.image.load('sprites/balaJ.png')#pygame.Surface([10,30])#pygame.image.load('sprites/bala.png')#pygame.Surface([10,30])
+        #self.image.fill([0,255,0])
         self.rect = self.image.get_rect()
         self.enemigos = pygame.sprite.Group()
         self.i = 0#float('inf')
@@ -214,8 +216,8 @@ class Bala (pygame.sprite.Sprite):
                 enem = self.k[min(self.k.keys())]
                 if enem in self.enemigos:
                     print enem
-                    self.rect.x += (enem.rect.x+ enem.rect[2]/2 + 7 - self.rect.x)/7
-                    self.rect.y += (enem.rect.y+ enem.rect[3]/2  - self.rect.y)/50
+		    self.rect.x += (enem.rect.x+ enem.rect[2]/2 + 7 - self.rect.x)/7
+		    self.rect.y += (enem.rect.y+ enem.rect[3]/2  - self.rect.y)/50
                 else:
                     enem = self.k[min(self.k.keys())]
 
