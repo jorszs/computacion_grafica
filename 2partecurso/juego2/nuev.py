@@ -10,8 +10,6 @@
 #recordar : ponerle la aleatoriedad al atributo tipo de la clase modificadores
 #ideas : ponerle mas vida a los enemigos. coliciones de enemigos y jugador
 #       adicionar naves madre a enemigos para que las balas rastreadoras tambien las identifiquen como objetivos
-# SPRITES  https://t-free.deviantart.com/art/CrossCode-Moth-Boss-609012494
-#https://t-free.deviantart.com/art/Explosion-010-Impact-Radial-MIX-668569283
 import pygame
 import time
 import random
@@ -117,8 +115,8 @@ class Jugador(pygame.sprite.Sprite):
 class Enemigo (pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load('sprites/navesecundaria.png')# pygame.Surface([30,30])
-        #self.image.fill([225,0,0])
+        self.image = pygame.Surface([30,30])
+        self.image.fill([225,0,0])
         self.rect = self.image.get_rect()
         self.vel_x = -5
         self.vel_y = 5
@@ -143,8 +141,8 @@ class Enemigo (pygame.sprite.Sprite):
 class Nave_madre(pygame.sprite.Sprite):
     def __init__(self,jugador1,jugador2):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load('sprites/navemadre.png')#image.sprite#pygame.Surface([40,25])
-        #self.image.fill([55,20,200])
+        self.image = pygame.Surface([40,25])
+        self.image.fill([55,20,200])
         self.rect = self.image.get_rect()
         self.jugador1 = jugador1
         self.jugador2 = jugador2
@@ -191,8 +189,8 @@ class Nave_madre(pygame.sprite.Sprite):
 class Bala (pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load('sprites/balaJ.png')#pygame.Surface([10,30])#pygame.image.load('sprites/bala.png')#pygame.Surface([10,30])
-        #self.image.fill([0,255,0])
+        self.image = pygame.Surface([10,30])#pygame.image.load('sprites/bala.png')#pygame.Surface([10,30])
+        self.image.fill([0,255,0])
         self.rect = self.image.get_rect()
         self.enemigos = pygame.sprite.Group()
         self.i = 0#float('inf')
@@ -216,8 +214,8 @@ class Bala (pygame.sprite.Sprite):
                 enem = self.k[min(self.k.keys())]
                 if enem in self.enemigos:
                     print enem
-		    self.rect.x += (enem.rect.x+ enem.rect[2]/2 + 7 - self.rect.x)/7
-		    self.rect.y += (enem.rect.y+ enem.rect[3]/2  - self.rect.y)/50
+                    self.rect.x += (enem.rect.x+ enem.rect[2]/2 + 7 - self.rect.x)/7
+                    self.rect.y += (enem.rect.y+ enem.rect[3]/2  - self.rect.y)/50
                 else:
                     enem = self.k[min(self.k.keys())]
 
@@ -263,8 +261,8 @@ class Modificador (pygame.sprite.Sprite):
     def update(self):
         self.rect.y += self.vel_y
         #self.rect.x += self.vel_x
-
-def mundo1():
+if __name__ == '__main__':
+    #definicion de variables
     pygame.init()
     pantalla = pygame.display.set_mode([ANCHO,ALTO])
     '''fondo = Fondo()
@@ -319,7 +317,6 @@ def mundo1():
 
     fuente = pygame.font.Font(None, 32)
     fuente2 = pygame.font.Font(None, 32)
-    gameover = False
     fin = False
     while not fin:
         #gestion de eventos
@@ -401,7 +398,7 @@ def mundo1():
                 if event.key == pygame.K_KP0 and jugador.bombas >0:
                     jugador.bombas -= 1
                     bom = Bomba(3)
-                    bom.rect.x = jugador.rect.centerx
+                    bom.rect.x = jugador.rect.x+70
                     bom.rect.y = jugador.rect.y
                     bombas.add(bom)
                     todos.add(bom)
@@ -424,54 +421,10 @@ def mundo1():
                     b = Bala()
                     b.rect.x = jugador2.rect.x+20
                     b.rect.y = jugador2.rect.y
-                    if jugador2.tipo_bala == 2: #tipo_bala = 2 es la bala perseguidora
-                        if jugador2.retardo == 0:
-                            jugador2.retardo = 10
-                            b.tipo = 0
-                            b1 = Bala()
-                            b1.tipo = jugador2.tipo_bala
-                            b2 = Bala()
-                            b2.tipo = jugador2.tipo_bala
-                            b3 = Bala()
-                            b3.tipo = jugador2.tipo_bala
-                            b4 = Bala()
-                            b4.tipo = jugador2.tipo_bala
 
-                            b1.rect.x = jugador2.rect.x + jugador2.rect[2]/2 - 60
-                            b1.rect.y = jugador2.rect.y + jugador2.rect[2]/2 - 60
-                            b2.rect.x = jugador2.rect.x + jugador2.rect[2]/2 + 60
-                            b2.rect.y = jugador2.rect.y + jugador2.rect[2]/2 - 60
-                            b3.rect.x = jugador2.rect.x + jugador2.rect[2]/2 - 60
-                            b3.rect.y = jugador2.rect.y + jugador2.rect[2]/2 + 60
-                            b4.rect.x = jugador2.rect.x + jugador2.rect[2]/2 + 60
-                            b4.rect.y = jugador2.rect.y + jugador2.rect[2]/2 + 60
-
-
-                            l=[[b1,b2,b3,b4]]
-
-                            for v in l[0]:
-                                todos.add(v)
-                                balas.add(v)
-                                balas_j2.add(v)
-                                v.enemigos = enemigos
-
-                        else:
-                            jugador2.retardo -= 1
-                            #print jugador.retardo
-
-                    else:
-                        b.tipo = jugador2.tipo_bala
                     todos.add(b)
                     balas.add(b)
                     balas_j2.add(b)
-            #bomba jugador 2
-                if event.key == pygame.K_h and jugador2.bombas >0:
-                    jugador2.bombas -= 1
-                    bom = Bomba(3)
-                    bom.rect.x = jugador2.rect.centerx
-                    bom.rect.y = jugador2.rect.y
-                    bombas.add(bom)
-                    todos.add(bom)
         #condiciones de tecla levantada ambos jugadores
             if event.type == pygame.KEYUP:
                 #print 'perra'
@@ -581,7 +534,6 @@ def mundo1():
                     todos.remove(b)
                     e.salud -= 1
 
-        #coliciones con modificadores y naves madre suicidas
         for j in jugadores:
             ls_coljs = pygame.sprite.spritecollide(j,naves_madre,True)
             ls_colmo = pygame.sprite.spritecollide(j,modificadores,True)
@@ -598,16 +550,14 @@ def mundo1():
                     j.salud += 2
                 if v.tipo == 1:
                     j.tipo_bala = 1 #modificador para generar balarompemuros
-                if v.tipo == 2:#modificador para generar bomba
+                if v.tipo == 2:
                     j.bombas += 1
 
-                if v.tipo == 3:#modificador para generar balas rastreadoras
+                if v.tipo == 3:
                     j.tipo_bala = 2
 
         #control de objetos
-        #game over
-        if jugador.salud  <= 0 or jugador2.salud <= 0:
-            fin = True
+
         #renovacion de enemivos
         if eliminados == 3:
             eliminados = 0
@@ -674,7 +624,7 @@ def mundo1():
                 balas.remove(b)
                 todos.remove(b)
         for e in enemigos:
-            if e.rect.y >ALTO or e.rect.x < 0 or e.rect.x > ANCHO:
+            if e.rect.y >ALTO:
                 e.remove()
                 enemigos.remove(e)
                 todos.remove(e)
@@ -694,38 +644,3 @@ def mundo1():
         todos.draw(pantalla)
         pygame.display.flip()
         reloj.tick(30)
-    print 'perdiste pinche puto'
-    fin2 = False
-    fuente2 = pygame.font.Font(None, 32)
-    pantalla = pygame.display.set_mode([700,500])
-    while not fin2:
-        #print 'jajajajajajaj'
-        fondo2 = pygame.image.load('sprites/gameover.png')
-        info=fondo2.get_rect()
-        an_fondo2 = info[2]
-        al_fondo2 = info[3]
-
-        pantalla.blit(fondo2,[-610,-300])
-        texto2 = fuente2.render("press Y to continue or N to finish", False, [255,255,255])
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                fin2 =True
-            if event.type == pygame.KEYDOWN:
-                #print 'keydowm'#jugador.accion = 2
-                if event.key == pygame.K_y:
-                    mundo1()
-                if event.key == pygame.K_n:
-                    print 'jajajajajajaj'
-                    fin2 =True
-
-        pantalla.blit(texto2, [200,ALTO/2-20])
-        pygame.display.flip()
-
-
-if __name__ == '__main__':
-    #definicion de variables
-
-    mundo1()
-    #instruccion que se ejecutara cuando game over haga que salgamos del bucle
-
-    #mundo1()

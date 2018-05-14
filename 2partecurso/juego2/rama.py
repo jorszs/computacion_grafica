@@ -9,7 +9,7 @@
 #que el jugador pueda exederse un poco a los laterales para que alcance a disparar en los bordes
 #recordar : ponerle la aleatoriedad al atributo tipo de la clase modificadores
 #ideas : ponerle mas vida a los enemigos. coliciones de enemigos y jugador
-#       adicionar naves madre a enemigos para que las balas rastreadoras tambien las identifiquen como objetivos 
+#       adicionar naves madre a enemigos para que las balas rastreadoras tambien las identifiquen como objetivos
 # SPRITES  https://t-free.deviantart.com/art/CrossCode-Moth-Boss-609012494
 #https://t-free.deviantart.com/art/Explosion-010-Impact-Radial-MIX-668569283
 import pygame
@@ -61,6 +61,28 @@ def matriz2 ():
     lista.append(pygame.image.load('sprites/nave2.png'))
     m.append(lista)
     return m
+def matrizbomba ():
+    lista=[]
+    m=[]
+    limites = [3,3]
+    lista.append(pygame.image.load('sprites/bomba1.png'))
+    m.append(lista)
+
+    image=pygame.image.load('sprites/explosion.png')
+    info=image.get_rect()
+    an_img=info[2]
+    al_img=info[3]
+    an_corte=int(an_img/3)
+    al_corte=int(al_img/2)
+
+    for y in range(2):
+        fila=[]
+        for x in range(limites[y]):
+            cuadro = image.subsurface(x*an_corte,y*al_corte,an_corte,al_corte)
+            fila.append(cuadro)
+        m.append(fila)
+    return m
+
 
 
 class Jugador(pygame.sprite.Sprite):
@@ -75,7 +97,7 @@ class Jugador(pygame.sprite.Sprite):
         self.rect.y = 200
         self.vel_x = 0
         self.vel_y = 0
-        self.bombas = 0
+        self.bombas = 5
         self.salud = 5
         self.tipo_bala = 0
         self.retardo = 4 #retardo para la aparicion de balas perseguidoras
@@ -148,6 +170,8 @@ class Nave_madre(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.jugador1 = jugador1
         self.jugador2 = jugador2
+        self.navefinal = False
+        #self.disparar = False
         self.vel_x = 2
         self.vel_y = 3
         self.salud = 10
@@ -163,19 +187,29 @@ class Nave_madre(pygame.sprite.Sprite):
             self.temp -= 1
         else:
             self.generar = True
+            #self.disparar =True
         if self.espera > 0:
             self.espera -=1
 
-        if self.tipo == 0:
-            if self.rect.y >= ALTO/6:
-                self.rect.y = ALTO/6
-                if self.rect.right >= ANCHO:
-                    self.vel_x = -2
-                elif self.rect.left <= 0:
-                    self.vel_x = 2
-                self.rect.x += self.vel_x
-            else:
-                self.rect.y += self.vel_y
+        '''if self.tipo == 0:
+            if self.navefinal:
+                if self.rect.y >= 0:
+                    self.rect.y = 0
+                    if self.rect.right >= ANCHO:
+                        self.vel_x = -2
+                    elif self.rect.left <= 0:
+                        self.vel_x = 2
+                    self.rect.x += self.vel_x'''
+
+        if self.rect.y >= ALTO/6:
+            self.rect.y = ALTO/6
+            if self.rect.right >= ANCHO:
+                self.vel_x = -2
+            elif self.rect.left <= 0:
+                self.vel_x = 2
+            self.rect.x += self.vel_x
+        else:
+            self.rect.y += self.vel_y
         if self.tipo == 1:
             self.rect.x += (self.jugador1.rect.x+ self.jugador1.rect[2]/3 + 7 - self.rect.x)/50
             self.rect.y += (self.jugador1.rect.y+ self.jugador1.rect[3]  - self.rect.y)/50
@@ -215,7 +249,7 @@ class Bala (pygame.sprite.Sprite):
             if self.k:
                 enem = self.k[min(self.k.keys())]
                 if enem in self.enemigos:
-                    print enem
+                    #print enem
 		    self.rect.x += (enem.rect.x+ enem.rect[2]/2 + 7 - self.rect.x)/7
 		    self.rect.y += (enem.rect.y+ enem.rect[3]/2  - self.rect.y)/50
                 else:
@@ -238,8 +272,10 @@ class Bomba(pygame.sprite.Sprite):
     def __init__(self,m):
         pygame.sprite.Sprite.__init__(self)
         self.m = m
-        self.image = pygame.Surface([10,30])#pygame.image.load('sprites/bala.png')#pygame.Surface([10,30])
-        self.image.fill([0,255,0])
+        self.accion = 0
+        self.i = 0
+        self.image = self.m[self.accion][self.i]#pygame.image.load('sprites/bomba1.png')#pygame.Surface([10,30])#pygame.image.load('sprites/bala.png')#pygame.Surface([10,30])
+        #self.image.fill([0,255,0])
         self.rect = self.image.get_rect()
 
         self.tipo = 0
@@ -248,6 +284,20 @@ class Bomba(pygame.sprite.Sprite):
 
     def update(self):
         self.rect.y -= self.vel_y
+        if self.accion == 1:
+            self.i+=1
+            if self.i >=len(self.m[self.accion]):
+                self.i = 0
+                self.accion = 2
+        else:
+            if self.accion == 2:
+                self.i+=1
+                if self.i >=len(self.m[self.accion]):
+                    self.i = 0
+                    self.kill()
+                    #self.accion = 2
+                    self.remove()
+        self.image = self.m[self.accion][self.i]
 
 class Modificador (pygame.sprite.Sprite):
     def __init__(self):
@@ -256,15 +306,19 @@ class Modificador (pygame.sprite.Sprite):
         self.image.fill([0,255,0])
         self.rect = self.image.get_rect()
         self.rect.x = random.randrange(20,ANCHO-20)
-        self.tipo = 3#random.randrange(4)
+        self.tipo = 2#random.randrange(4)
+        if self.tipo == 0:
+            self.image = pygame.image.load('sprites/vida.png')
+        elif self.tipo == 2:
+            self.image = pygame.image.load('sprites/bomba_bono.png')
         self.vel_x = 0
         self.vel_y = 4
 
     def update(self):
         self.rect.y += self.vel_y
         #self.rect.x += self.vel_x
-if __name__ == '__main__':
-    #definicion de variables
+
+def mundo1():
     pygame.init()
     pantalla = pygame.display.set_mode([ANCHO,ALTO])
     '''fondo = Fondo()
@@ -274,6 +328,8 @@ if __name__ == '__main__':
     an_fondo = info[2]
     al_fondo = info[3]
     eliminados = 0
+    eliminadosT = 0
+
     tipo_bala = 0
     posy =  ALTO-al_fondo #variable para controlar el dibujo del fondo
 # grupos
@@ -290,7 +346,11 @@ if __name__ == '__main__':
 #definiendo y agregando elementos a la matriz de sprites
     m = matriz ()
     m2 = matriz2()
+    #ex = Recortar(2,3,'sprites/explosion.png',[3,3])
+    mB = matrizbomba ()
 # objetos
+
+
     jugador = Jugador(m)
     jugador2 = Jugador(m2)
     jugador2.image = jugador2.m[0][0]#pygame.image.load('sprites/nave2.png')#jugador2.m[3][0]
@@ -313,12 +373,25 @@ if __name__ == '__main__':
     todos.add(jugador2)
 
 
+    eneF = Nave_madre(jugador,jugador2)
+    eneF.tipo = 0
+    eneF.image = pygame.image.load('sprites/eneF.png')
+    eneF.rect = eneF.image.get_rect()
+    eneF.rect[3] = eneF.rect[3]/3
+    eneF.espera = random.randrange(60)
+    eneF.temp = random.randrange(60)
+    eneF.rect.y = -500
+    #cambiar sprite
+    eneF.salud =  20
+    #naves_madre.add(eneF)
 
     reloj = pygame.time.Clock()
     ptos = 0
 
     fuente = pygame.font.Font(None, 32)
     fuente2 = pygame.font.Font(None, 32)
+    win = False
+    end = False #me va a controlar que no se generen mas enemigos cuando la nave eneF aparezca
     fin = False
     while not fin:
         #gestion de eventos
@@ -350,6 +423,9 @@ if __name__ == '__main__':
             #condicion para que jugador1 dispare
                 if event.key == pygame.K_KP3:
                     b = Bala()
+                    if jugador.tipo_bala == 1:
+                        b.image = pygame.image.load('sprites/bespecial.png')
+                        b.rect =  b.image.get_rect()
                     b.rect.x = jugador.rect.x+70
                     b.rect.y = jugador.rect.y
                     if jugador.tipo_bala == 2: #tipo_bala = 2 es la bala perseguidora
@@ -390,6 +466,7 @@ if __name__ == '__main__':
                     else:
                         b.tipo = jugador.tipo_bala
 
+
                     todos.add(b)
                     balas.add(b)
                     balas_j1.add(b)
@@ -399,13 +476,13 @@ if __name__ == '__main__':
 
                 if event.key == pygame.K_KP0 and jugador.bombas >0:
                     jugador.bombas -= 1
-                    bom = Bomba(3)
-                    bom.rect.x = jugador.rect.x+70
+                    bom = Bomba(mB)
+                    bom.rect.x = jugador.rect.centerx
                     bom.rect.y = jugador.rect.y
                     bombas.add(bom)
                     todos.add(bom)
 
-        #acciones jugador2
+                #acciones jugador2
                 if event.key == pygame.K_w:
                     jugador2.vel_y += -8
                     jugador2.vel_x = 0
@@ -421,13 +498,60 @@ if __name__ == '__main__':
             #condicion de disparo jugador2
                 if event.key == pygame.K_g:
                     b = Bala()
-                    b.rect.x = jugador2.rect.x+20
+                    if jugador2.tipo_bala == 1:
+                        b.image = pygame.image.load('sprites/bespecial.png')
+                        b.rect =  b.image.get_rect()
+                    b.rect.x = jugador2.rect.centerx
                     b.rect.y = jugador2.rect.y
+                    if jugador2.tipo_bala == 2: #tipo_bala = 2 es la bala perseguidora
+                        if jugador2.retardo == 0:
+                            jugador2.retardo = 10
+                            b.tipo = 0
+                            b1 = Bala()
+                            b1.tipo = jugador2.tipo_bala
+                            b2 = Bala()
+                            b2.tipo = jugador2.tipo_bala
+                            b3 = Bala()
+                            b3.tipo = jugador2.tipo_bala
+                            b4 = Bala()
+                            b4.tipo = jugador2.tipo_bala
 
+                            b1.rect.x = jugador2.rect.x + jugador2.rect[2]/2 - 60
+                            b1.rect.y = jugador2.rect.y + jugador2.rect[2]/2 - 60
+                            b2.rect.x = jugador2.rect.x + jugador2.rect[2]/2 + 60
+                            b2.rect.y = jugador2.rect.y + jugador2.rect[2]/2 - 60
+                            b3.rect.x = jugador2.rect.x + jugador2.rect[2]/2 - 60
+                            b3.rect.y = jugador2.rect.y + jugador2.rect[2]/2 + 60
+                            b4.rect.x = jugador2.rect.x + jugador2.rect[2]/2 + 60
+                            b4.rect.y = jugador2.rect.y + jugador2.rect[2]/2 + 60
+
+
+                            l=[[b1,b2,b3,b4]]
+
+                            for v in l[0]:
+                                todos.add(v)
+                                balas.add(v)
+                                balas_j2.add(v)
+                                v.enemigos = enemigos
+
+                        else:
+                            jugador2.retardo -= 1
+                            #print jugador.retardo
+
+                    else:
+                        b.tipo = jugador2.tipo_bala
                     todos.add(b)
                     balas.add(b)
                     balas_j2.add(b)
-        #condiciones de tecla levantada ambos jugadores
+            #bomba jugador 2
+                if event.key == pygame.K_h and jugador2.bombas >0:
+                    jugador2.bombas -= 1
+                    bom = Bomba(mB)
+                    bom.rect.x = jugador2.rect.centerx
+                    bom.rect.y = jugador2.rect.y
+                    bombas.add(bom)
+                    todos.add(bom)
+            #condiciones de tecla levantada ambos jugadores
             if event.type == pygame.KEYUP:
                 #print 'perra'
                 if event.key == pygame.K_RIGHT and jugador.vel_x>0: #or pygame.K_LEFT:
@@ -465,7 +589,7 @@ if __name__ == '__main__':
             fondo.rect.y += -5
         fondo.rect.y = 0'''
         #control del fondo
-        #if posy < 0:
+
         if jugador.rect.y <= ALTO/2 and jugador2.rect.y <= ALTO/2:
             if posy<0:
                 posy += 4
@@ -477,6 +601,24 @@ if __name__ == '__main__':
 
 
         #analizar coliciones
+        for b in bombas:
+            ls_cole = pygame.sprite.spritecollide(b, enemigos, True)
+            ls_coln = pygame.sprite.spritecollide(b, naves_madre, False)
+            for col in ls_cole:
+                b.accion = 1
+
+
+            for col in ls_coln:
+                b.accion = 1
+                if col.salud <=0:
+                    col.kill()
+                    col.remove()
+                    eliminadosT += 1
+                    eliminados += 1
+                else:
+
+                    col.salud -= 1
+                    print 'salud ' + str(col.salud)
         for b in balas_e:
 
             ls_colj = pygame.sprite.spritecollide(b, jugadores, False)
@@ -503,7 +645,13 @@ if __name__ == '__main__':
                     balas.remove(e)
                     #eliminados +=1
                 for e in ls_coln:
+                    if e.navefinal:
+                        print 'puto'
                     if e.salud == 0:
+
+
+                        eliminadosT += 1
+                        print eliminadosT
                         e.remove()
                         naves_madre.remove(e)
                         todos.remove(e)
@@ -512,6 +660,7 @@ if __name__ == '__main__':
                     balas.remove(b)
                     todos.remove(b)
 
+                    print 're puto'
                     e.salud -= 1
                     #print 'salud nave madre mermando'
             if b.tipo == 1:
@@ -531,50 +680,76 @@ if __name__ == '__main__':
                         naves_madre.remove(e)
                         todos.remove(e)
                         eliminados += 1
-                        print eliminados
+                        #print eliminados
                     balas.remove(b)
                     todos.remove(b)
                     e.salud -= 1
 
+        #coliciones con modificadores y naves madre suicidas
         for j in jugadores:
             ls_coljs = pygame.sprite.spritecollide(j,naves_madre,True)
             ls_colmo = pygame.sprite.spritecollide(j,modificadores,True)
 
             for e in ls_coljs:
-                eliminados += 1
-                j.salud -= 1
-                e.remove()
-                naves_madre.remove(e)
-                todos.remove(e)
+                if e.navefinal:
+                    eliminados += 1
+                    eliminadosT +=1
+                    j.salud -= 1
+                    e.remove()
+                    naves_madre.remove(e)
+                    todos.remove(e)
+                else: pass
 
             for v in ls_colmo:
                 if v.tipo == 0:#modificador para aumentar salud
                     j.salud += 2
                 if v.tipo == 1:
+
                     j.tipo_bala = 1 #modificador para generar balarompemuros
-                if v.tipo == 2:
+                    print 'bala balarompemuros'
+                if v.tipo == 2:#modificador para generar bomba
                     j.bombas += 1
 
-                if v.tipo == 3:
+                if v.tipo == 3:#modificador para generar balas rastreadoras
                     j.tipo_bala = 2
 
         #control de objetos
-
+        #game over
+        if jugador.salud  <= 0 or jugador2.salud <= 0:
+            pass#fin = True
+        # win
+        if eneF.salud <= 0:
+            print 'se acabo esta mierda'
+            fin = True
+            win = True
         #renovacion de enemivos
-        if eliminados == 3:
-            eliminados = 0
-            for e in range(3):
-                n = Nave_madre(jugador,jugador2)
-                if n.tipo == 1 or n.tipo == 2:
-                    n.espera = random.randrange(60)
-                    n.temp = random.randrange(60)
-                    n.salud = 4
-                naves_madre.add(n)
-                todos.add(n)
-            for n in range(2):
-                n = Modificador()
-                modificadores.add(n)
-                todos.add(n)
+
+
+        # control del ultimo enemigo
+
+        if eliminadosT == 7:
+            print 'loca'
+            naves_madre.add(eneF)
+            todos.add(eneF)
+            end = True
+
+        else:
+            if eliminados == 3 and not end:
+                eliminados = 0
+                for e in range(3):
+                    n = Nave_madre(jugador,jugador2)
+                    if n.tipo == 1 or n.tipo == 2:
+                        n.espera = random.randrange(60)
+                        n.temp = random.randrange(60)
+                        n.salud = 4
+                    naves_madre.add(n)
+                    #enemigos.add(n)
+                    todos.add(n)
+                for n in range(2):
+                    n = Modificador()
+                    modificadores.add(n)
+                    todos.add(n)
+
         for e in enemigos:
             if e.disparar:
                 e.temp = random.randrange(60)
@@ -613,6 +788,9 @@ if __name__ == '__main__':
 
                     enemigos.add(e)
                     todos.add(e)
+            else:
+                if n.navefinal :
+                    print n.salud
         #eliminacion de objetos fuera de calcularPosPantalla
         for b in balas_e:
             if b.rect.y > ALTO:
@@ -626,7 +804,7 @@ if __name__ == '__main__':
                 balas.remove(b)
                 todos.remove(b)
         for e in enemigos:
-            if e.rect.y >ALTO:
+            if e.rect.y >ALTO or e.rect.x < 0 or e.rect.x > ANCHO:
                 e.remove()
                 enemigos.remove(e)
                 todos.remove(e)
@@ -646,3 +824,47 @@ if __name__ == '__main__':
         todos.draw(pantalla)
         pygame.display.flip()
         reloj.tick(30)
+    x = 0
+    y = 0
+    if not win:
+        fondo2 = pygame.image.load('sprites/gameover.png')
+        x = -600
+        y = -300
+    else:
+        fondo2 = pygame.image.load('sprites/win.png')
+#    print 'perdiste pinche puto'
+    fin2 = False
+    fuente2 = pygame.font.Font(None, 32)
+    pantalla = pygame.display.set_mode([700,500])
+    while not fin2:
+        #print 'jajajajajajaj'
+
+        info=fondo2.get_rect()
+        an_fondo2 = info[2]
+        al_fondo2 = info[3]
+
+        pantalla.blit(fondo2,[x,y])
+        texto2 = fuente2.render("press Y to continue or N to finish", False, [255,255,255])
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                fin2 =True
+            if event.type == pygame.KEYDOWN:
+                #print 'keydowm'#jugador.accion = 2
+                if event.key == pygame.K_y:
+                    mundo1()
+                if event.key == pygame.K_n:
+                    print 'jajajajajajaj'
+                    fin2 =True
+
+        pantalla.blit(texto2, [200,ALTO/2-20])
+        pygame.display.flip()
+        reloj.tick(60)
+
+
+if __name__ == '__main__':
+    #definicion de variables
+
+    mundo1()
+    #instruccion que se ejecutara cuando game over haga que salgamos del bucle
+
+    #mundo1()
